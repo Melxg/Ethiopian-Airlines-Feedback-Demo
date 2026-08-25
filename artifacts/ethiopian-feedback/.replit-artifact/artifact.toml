@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ethiopian Airlines Passenger Feedback"
+description = "A frontend-only HCI prototype for multimodal Ethiopian Airlines passenger feedback, simulated sentiment analysis, and customer-service case handling."
+version = "1.0.0"
+id = "artifacts/ethiopian-feedback"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18116
+
+[services.development]
+run = "pnpm --filter @workspace/ethiopian-feedback run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ethiopian-feedback", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ethiopian-feedback/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18116"
+BASE_PATH = "/"

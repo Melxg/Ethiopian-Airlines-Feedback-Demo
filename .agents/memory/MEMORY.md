@@ -1,0 +1,1 @@
+- [Feedback prototype boundary](feedback-prototype-boundary.md) — keep the classroom demo frontend-only with local persistence and explicitly simulated sentiment.

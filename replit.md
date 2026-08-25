@@ -1,10 +1,11 @@
-# [Project name]
+# Ethiopian Airlines Passenger Feedback
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Frontend-only HCI prototype for passenger feedback, simulated sentiment analysis, and customer-service follow-through.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/ethiopian-feedback run dev` — run the passenger feedback web app
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec

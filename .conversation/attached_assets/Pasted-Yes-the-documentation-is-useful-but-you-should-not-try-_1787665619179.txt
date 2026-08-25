@@ -1,0 +1,920 @@
+Yes — the documentation is useful, but **you should not try to implement the whole assignment in the prototype**. Your demo should make the evaluator *see* the HCI principles through the interaction itself.
+
+For your case, I’d structure the prototype around **one realistic Ethiopian Airlines customer-feedback workflow**, with a second **Agent/Staff view** so you can demonstrate what happens after submission.
+
+The key story becomes:
+
+**Customer → submits text/audio/video feedback → system analyzes sentiment → customer sees understandable result → airline agent receives prioritized feedback → agent can review the original evidence and respond.**
+
+Below is a curated prompt you can paste directly into **Replit Agent**. It tells Replit what to build, what *not* to build, and specifically emphasizes HCI rather than pretending you're building a real AI backend.
+
+Build a polished **frontend-only HCI prototype** called **Ethiopian Airlines – Multimodal Passenger Feedback & Sentiment Analysis**.
+
+## PROJECT PURPOSE
+
+This is an **HCI course prototype**, not a production application. The main goal is to demonstrate strong **Human-Computer Interaction principles, usability, interaction design, navigation, feedback, cognitive support, error prevention, consistency, accessibility, and user-centered design**.
+
+The prototype simulates a multimodal sentiment analysis system where Ethiopian Airlines passengers can submit feedback using:
+
+* Text
+* Audio
+* Video
+
+The interface should simulate sentiment analysis results such as Positive, Neutral, or Negative. **Do not build a real AI/ML model or backend.** Use realistic mock analysis results so the focus remains on HCI.
+
+Use **HTML, CSS, and vanilla JavaScript only**.
+
+Use **localStorage** to persist submitted text, audio/video metadata, feedback records, sentiment results, and demo state between page refreshes.
+
+---
+
+# BRANDING
+
+Use the **official Ethiopian Airlines visual identity as inspiration**, including the Ethiopian Airlines logo/wordmark where legally appropriate for a student prototype.
+
+Primary visual theme:
+
+* Ethiopian Airlines red
+* White
+* Dark charcoal/black for text and contrast
+* Very subtle light gray backgrounds
+
+The UI should feel like a professional airline customer-service system, NOT a generic AI dashboard.
+
+Use a clean aviation-inspired visual style with:
+
+* White surfaces
+* Red primary actions
+* Rounded but professional cards
+* Subtle shadows
+* Strong visual hierarchy
+* Generous spacing
+* Clear typography
+* Minimal unnecessary decoration
+
+Do not overuse red. Reserve it for primary actions, important states, navigation emphasis, and Ethiopian Airlines branding.
+
+---
+
+# APPLICATION STRUCTURE
+
+Create two clearly separated roles:
+
+## ROLE 1 — PASSENGER
+
+The passenger can:
+
+1. View a welcoming dashboard
+2. Understand what the system does
+3. Select a feedback modality
+4. Enter text feedback
+5. Record/upload audio
+6. Record/upload video
+7. Review their submission before sending
+8. Submit feedback
+9. See a simulated sentiment analysis result
+10. Understand why the result matters
+11. View their previous submissions
+12. Track feedback status
+
+## ROLE 2 — AIRLINE CUSTOMER-SERVICE AGENT
+
+The agent can:
+
+1. View a dashboard
+2. See incoming passenger feedback
+3. See sentiment classification
+4. See priority level
+5. Filter feedback
+6. Search feedback
+7. Open a feedback case
+8. Review the original text/audio/video
+9. See multimodal analysis
+10. View passenger/context information
+11. Change case status
+12. Add an internal response/note
+
+The role switch should be clearly visible and easy to understand.
+
+Create a simple demo login/role-selection screen:
+
+* Continue as Passenger
+* Continue as Customer-Service Agent
+
+No real authentication is required.
+
+---
+
+# PASSENGER WORKFLOW
+
+Design the passenger workflow as a clear step-by-step interaction:
+
+### Step 1 — Welcome
+
+Show:
+
+“Your experience matters.”
+
+Supporting text:
+
+“Share your Ethiopian Airlines experience using text, voice, or video. Your feedback helps us understand passenger experiences and improve our service.”
+
+Primary button:
+
+“Give Feedback”
+
+Secondary option:
+
+“View My Feedback”
+
+Show a simple 3-step explanation:
+
+1. Share your experience
+2. We analyze your feedback
+3. Ethiopian Airlines can respond
+
+This demonstrates **visibility, learnability, and recognition rather than recall**.
+
+---
+
+### Step 2 — Choose Feedback Type
+
+Present three large selectable cards:
+
+TEXT
+“Write about your experience”
+
+AUDIO
+“Record your experience using your voice”
+
+VIDEO
+“Record a video explaining your experience”
+
+Each card should have an appropriate icon and clear selected/unselected states.
+
+Do NOT hide functionality inside menus.
+
+When the user selects a modality, provide immediate visual feedback.
+
+---
+
+# TEXT FEEDBACK
+
+Create a clean text-entry interface.
+
+Include:
+
+* Large accessible textarea
+* Character counter
+* Example placeholder
+* Clear label
+* Submit/Continue button
+* Cancel button
+
+Example placeholder:
+
+“Tell us about your flight experience, cabin service, airport experience, baggage, boarding, or anything else you would like Ethiopian Airlines to know.”
+
+Use validation.
+
+If the user tries to continue with empty text, show an inline error:
+
+“Please tell us about your experience before continuing.”
+
+Do not use an intrusive browser alert.
+
+This demonstrates **error prevention, visibility of system status, and helpful error recovery**.
+
+---
+
+# AUDIO FEEDBACK
+
+Create an audio recording interface.
+
+Include:
+
+* Microphone icon
+* Record button
+* Recording timer
+* Recording state
+* Stop button
+* Playback preview
+* Delete/re-record option
+* Continue button
+
+Use browser MediaRecorder where available.
+
+Store the recording locally using browser storage mechanisms appropriate for a frontend demo. If storing the raw Blob directly in localStorage is impractical, use IndexedDB for media while keeping feedback metadata in localStorage.
+
+Clearly communicate microphone permission requirements.
+
+Example states:
+
+“Ready to record”
+
+“Recording…”
+
+“Recording complete”
+
+“Preview your recording before submitting.”
+
+The interface must never leave the user wondering whether recording is active.
+
+---
+
+# VIDEO FEEDBACK
+
+Create a similar video recording interface.
+
+Include:
+
+* Camera preview
+* Start recording
+* Recording timer
+* Stop recording
+* Playback preview
+* Delete/re-record
+* Continue
+
+Clearly show recording status.
+
+Use MediaRecorder if supported.
+
+Handle permission denial gracefully:
+
+“We couldn't access your camera. Please allow camera access or choose another feedback method.”
+
+Provide a fallback:
+
+“Use Text Feedback instead”
+
+This demonstrates **error recovery and alternative paths**.
+
+---
+
+# REVIEW BEFORE SUBMISSION
+
+Before final submission, show a review screen.
+
+Title:
+
+“Review your feedback”
+
+Display:
+
+* Selected modality
+* Text preview OR audio player OR video preview
+* Optional flight/service category
+* Submission timestamp
+* Privacy explanation
+
+Buttons:
+
+“Edit Feedback”
+
+“Submit Feedback”
+
+This is important for **error prevention** because users can verify their information before committing.
+
+---
+
+# SIMULATED SENTIMENT ANALYSIS
+
+After submission, show a short processing state.
+
+Example:
+
+“Analyzing your feedback…”
+
+Use a subtle progress animation.
+
+Do NOT make the user wait excessively.
+
+Then show a results screen.
+
+Example:
+
+### Sentiment
+
+Negative
+
+### Confidence
+
+87%
+
+### Key signals
+
+* Long waiting time
+* Frustration with boarding process
+* Request for better communication
+
+Also show:
+
+“Your feedback has been sent to Ethiopian Airlines Customer Service.”
+
+Generate different mock sentiment results depending on the sample text or selected demo case.
+
+Possible sentiment categories:
+
+* Positive
+* Neutral
+* Negative
+
+Use accessible labels and icons in addition to color. Never communicate sentiment using color alone.
+
+---
+
+# CUSTOMER RESULT SCREEN
+
+Create a friendly result card.
+
+Example:
+
+“Thank you for sharing your experience.”
+
+Then:
+
+“Detected sentiment: Negative”
+
+“Your feedback has been forwarded to the appropriate customer-service team.”
+
+Show case number:
+
+“Feedback ID: ET-2026-00124”
+
+Show status:
+
+“Received”
+
+Allow:
+
+“View My Feedback”
+
+“Submit Another Feedback”
+
+Avoid making the interface sound like the AI's interpretation is absolute.
+
+Use wording such as:
+
+“Detected sentiment”
+
+rather than:
+
+“Your true emotion is…”
+
+---
+
+# PASSENGER FEEDBACK HISTORY
+
+Create a page showing previous submissions.
+
+Each feedback card should contain:
+
+* Feedback ID
+* Date
+* Modality
+* Sentiment
+* Status
+* Short preview
+
+Statuses:
+
+Received
+Under Review
+Resolved
+
+Provide filtering.
+
+Clicking a card opens its details.
+
+This demonstrates **visibility, consistency, navigation, and system status**.
+
+---
+
+# AGENT DASHBOARD
+
+Create a professional customer-service dashboard.
+
+Header:
+
+“Customer Service Center”
+
+Subtitle:
+
+“Multimodal Passenger Feedback”
+
+Show summary cards:
+
+Total Feedback
+Negative
+Neutral
+Positive
+Needs Attention
+
+Then display an inbox/table of feedback.
+
+Columns:
+
+* Feedback ID
+* Passenger
+* Date
+* Modality
+* Sentiment
+* Priority
+* Status
+
+Use clear badges.
+
+Negative/high-priority feedback should be visually noticeable but not overwhelming.
+
+---
+
+# AGENT FILTERING
+
+Provide:
+
+Search field
+
+Sentiment filter:
+
+All
+Positive
+Neutral
+Negative
+
+Modality:
+
+All
+Text
+Audio
+Video
+
+Status:
+
+All
+Received
+Under Review
+Resolved
+
+Priority:
+
+All
+High
+Medium
+Low
+
+Filters should update the interface immediately.
+
+This demonstrates **visibility, user control, flexibility, and efficient interaction**.
+
+---
+
+# FEEDBACK DETAIL VIEW
+
+When an agent opens a case, show:
+
+Feedback ID
+
+Passenger information
+
+Submission date
+
+Modality
+
+Original feedback
+
+Sentiment
+
+Confidence
+
+Detected signals
+
+Priority
+
+Status
+
+For text:
+Display the original text.
+
+For audio:
+Display an audio player and transcript.
+
+For video:
+Display video preview and transcript.
+
+Add a section:
+
+“Multimodal Analysis”
+
+Show:
+
+Text signal
+Audio signal
+Video signal
+Combined result
+
+Example:
+
+Text: Negative
+Audio: Negative
+Video: Neutral
+Overall: Negative
+
+Make it visually clear that the final sentiment is a combined interpretation.
+
+---
+
+# AGENT ACTIONS
+
+Include:
+
+“Mark as Under Review”
+
+“Mark as Resolved”
+
+“Add Internal Note”
+
+“View Original Submission”
+
+After an action, immediately show confirmation within the interface.
+
+Example:
+
+“Case updated successfully.”
+
+Avoid browser alerts.
+
+Use undo where appropriate if an action could be difficult to reverse.
+
+---
+
+# HCI REQUIREMENTS
+
+The prototype must visibly demonstrate these HCI principles:
+
+## 1. Visibility of System Status
+
+Always show:
+
+* Recording state
+* Upload/processing state
+* Analysis state
+* Submission success
+* Current case status
+* Active filters
+
+## 2. Match Between System and Real World
+
+Use familiar airline/customer-service terminology.
+
+Avoid unnecessary technical AI terminology.
+
+Use:
+
+“Passenger Feedback”
+
+“Customer Service”
+
+“Review”
+
+“Sentiment”
+
+instead of technical machine-learning terminology.
+
+## 3. User Control and Freedom
+
+Provide:
+
+Back
+
+Cancel
+
+Edit
+
+Delete/Re-record
+
+Submit
+
+Return to dashboard
+
+Users should be able to recover from mistakes.
+
+## 4. Consistency
+
+Buttons, colors, icons, terminology, cards, status badges, and navigation must remain consistent throughout the application.
+
+## 5. Error Prevention
+
+Validate forms before submission.
+
+Prevent empty feedback.
+
+Confirm destructive actions.
+
+Allow review before final submission.
+
+Handle microphone/camera permission errors.
+
+## 6. Recognition Rather Than Recall
+
+Use visible labels, icons, examples, breadcrumbs, clear navigation, and descriptive buttons.
+
+Do not make users remember instructions from previous screens.
+
+## 7. Flexibility and Efficiency
+
+Allow passengers to choose text, audio, or video.
+
+Allow agents to search and filter feedback quickly.
+
+## 8. Aesthetic and Minimalist Design
+
+Avoid unnecessary dashboards, charts, animations, or decorative elements.
+
+Every interface element should support a user task.
+
+## 9. Help Users Recognize and Recover From Errors
+
+Errors should explain:
+
+What happened
+Why it happened
+How to fix it
+
+Example:
+
+“Your microphone is unavailable. Check browser permissions or choose Text Feedback.”
+
+## 10. Accessibility
+
+Implement:
+
+* Semantic HTML
+* Proper labels
+* Keyboard navigation
+* Visible focus states
+* Sufficient contrast
+* ARIA labels where appropriate
+* Icons accompanied by text
+* Do not rely only on color
+* Responsive layout
+
+---
+
+# COGNITIVE DESIGN
+
+The interface should demonstrate:
+
+### Recognition
+
+Use visible choices instead of requiring memorization.
+
+### Chunking
+
+Break complex feedback submission into small steps.
+
+### Progressive Disclosure
+
+Only show advanced information when needed.
+
+### Cognitive Load Reduction
+
+Avoid unnecessary information.
+
+### Feedback
+
+Every important action should produce a visible response.
+
+### Affordance
+
+Buttons should visually look clickable.
+
+### Mapping
+
+Controls should be located near the information they affect.
+
+---
+
+# NAVIGATION
+
+Use a simple navigation structure.
+
+Passenger:
+
+Dashboard
+Give Feedback
+My Feedback
+Help
+
+Agent:
+
+Dashboard
+Feedback Inbox
+Analytics
+Help
+
+Make the current location obvious.
+
+Use breadcrumbs on deeper screens where useful.
+
+---
+
+# RESPONSIVE DESIGN
+
+The interface must work on:
+
+Desktop
+Tablet
+Mobile
+
+Prioritize desktop because this is a course demonstration, but make the layout responsive.
+
+---
+
+# DATA AND STORAGE
+
+Use frontend-only persistence.
+
+Use:
+
+localStorage for:
+
+* Feedback metadata
+* User role
+* Feedback IDs
+* Text submissions
+* Sentiment results
+* Status
+* Agent notes
+* Preferences
+
+Use IndexedDB for audio/video Blob data when necessary because localStorage cannot reliably store binary media.
+
+Include realistic seeded demo feedback so the agent dashboard is not empty on first launch.
+
+Provide a “Reset Demo Data” option inside a discreet demo/settings area.
+
+---
+
+# DEMO DATA
+
+Seed approximately 6–10 feedback cases.
+
+Include realistic Ethiopian Airlines passenger scenarios such as:
+
+* Excellent cabin crew
+* Smooth check-in
+* Delayed flight
+* Baggage issue
+* Poor boarding communication
+* Positive in-flight experience
+* Airport service complaint
+* Neutral service inquiry
+
+Use fictional passenger names.
+
+Do not use real customer personal information.
+
+---
+
+# VISUAL DESIGN
+
+Create a premium airline interface.
+
+Header:
+
+Ethiopian Airlines branding
+
+Navigation
+
+Role indicator
+
+Profile/demo menu
+
+Use Ethiopian Airlines red as the main brand accent.
+
+Use white as the dominant background.
+
+Use dark charcoal for text.
+
+Cards should be clean and spacious.
+
+Use subtle transitions.
+
+Avoid excessive glassmorphism, gradients, neon colors, or futuristic AI aesthetics.
+
+This should look like a serious airline customer-service application.
+
+---
+
+# MICROINTERACTIONS
+
+Add subtle interactions:
+
+* Button hover
+* Button pressed state
+* Card selection
+* Smooth transitions
+* Recording pulse
+* Loading state
+* Success confirmation
+* Toast notifications
+* Filter transitions
+* Modal open/close animation
+
+Animations must support understanding and not distract users.
+
+Respect prefers-reduced-motion.
+
+---
+
+# DEMO MODE
+
+Create a small “Demo Mode” indicator.
+
+The prototype should clearly communicate that sentiment analysis is simulated.
+
+Include a small informational note such as:
+
+“Prototype demonstration — sentiment results are simulated for HCI evaluation.”
+
+Do not make this visually dominant.
+
+---
+
+# IMPORTANT IMPLEMENTATION RULES
+
+1. Frontend only.
+2. No backend.
+3. No database server.
+4. No real AI API.
+5. No authentication system.
+6. No payment system.
+7. No unnecessary frameworks.
+8. Use HTML + CSS + vanilla JavaScript.
+9. Use localStorage and IndexedDB where appropriate.
+10. Make every important interaction functional.
+11. Do not create dead buttons.
+12. Use realistic Ethiopian Airlines passenger-service scenarios.
+13. Prioritize HCI principles over technical complexity.
+14. The prototype must be polished enough for a classroom presentation.
+15. The entire workflow must be demonstrable from start to finish.
+
+---
+
+# PRESENTATION DEMO FLOW
+
+Make sure this exact scenario works:
+
+1. Open application.
+2. Select “Passenger”.
+3. Enter the passenger dashboard.
+4. Click “Give Feedback”.
+5. Select Text, Audio, or Video.
+6. Submit a realistic complaint.
+7. Review the feedback.
+8. Submit it.
+9. Show “Analyzing…”
+10. Display simulated sentiment analysis.
+11. Show Feedback ID and status.
+12. Open “My Feedback”.
+13. Switch role to Customer-Service Agent.
+14. Open Agent Dashboard.
+15. Show the newly submitted feedback.
+16. Filter by Negative.
+17. Open the feedback case.
+18. Show original submission + sentiment analysis.
+19. Change status to “Under Review”.
+20. Add an internal note.
+21. Mark it “Resolved”.
+22. Return to dashboard.
+
+The evaluator should be able to clearly see how the passenger interacts with the system and how the airline agent handles the resulting feedback.
+
+---
+
+# FINAL QUALITY CHECK
+
+Before finishing, verify:
+
+* All navigation works.
+* All buttons work.
+* Text validation works.
+* Audio recording works where browser permissions allow it.
+* Video recording works where browser permissions allow it.
+* Audio/video previews work.
+* Feedback persists after refresh.
+* Agent dashboard receives passenger submissions.
+* Filters work.
+* Search works.
+* Status changes work.
+* Toast notifications work.
+* Error states are handled.
+* Responsive layout works.
+* Keyboard navigation works.
+* Focus states are visible.
+* No console-breaking errors.
+* No fake backend calls.
+* No unnecessary dependencies.
+
+Most importantly, **make the HCI principles visible through the interaction design itself rather than simply writing “HCI principle” labels everywhere.**
