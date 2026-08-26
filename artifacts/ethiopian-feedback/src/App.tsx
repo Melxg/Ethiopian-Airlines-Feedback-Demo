@@ -46,7 +46,12 @@ import {
   X,
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import NotFound from '@/pages/not-found';
+import LoginPage from '@/pages/login';
+import SignupPage from '@/pages/signup';
+import RoleSelectPage from '@/pages/role-select';
 
 type Role = 'passenger' | 'agent';
 type Modality = 'written' | 'audio' | 'video';
@@ -165,12 +170,13 @@ function useLocalStorage<T>(key: string, initial: T) {
   return [value, setValue] as const;
 }
 
-function App() {
-  const [role, setRole] = useLocalStorage<Role>('et-role', 'passenger');
+function AppContent() {
+  const { user, logout, isLoading } = useAuth();
   const [feedbacks, setFeedbacks] = useLocalStorage<Feedback[]>('et-feedbacks', seedCases);
   const [draft, setDraft] = useLocalStorage<Draft>('et-draft', blankDraft);
   const [toast, setToast] = useState('');
   const [dark, setDark] = useLocalStorage('et-dark', false);
+  const [location] = useLocation();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -180,10 +186,7 @@ function App() {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
   };
-  const switchRole = (next: Role) => {
-    setRole(next);
-    notify(next === 'agent' ? 'Agent workspace opened' : 'Passenger view opened');
-  };
+
   const submitFeedback = () => {
     const id = `ET-${Math.floor(4830 + Math.random() * 99)}`;
     const item: Feedback = {
@@ -205,43 +208,68 @@ function App() {
     notify('Feedback received — thank you for helping us improve');
   };
 
+  if (isLoading) {
+    return (
+      <main className="flex min-h-[100dvh] items-center justify-center bg-[hsl(var(--background))]">
+        <div className="text-center">
+          <Plane size={32} className="mx-auto mb-4 animate-spin text-[hsl(var(--secondary))]" />
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <ErrorBoundary resetKey={window.location.pathname}>
         <Switch>
-          <Route path="/" component={() => <RoleSelect onChoose={switchRole} />} />
+          <Route path="/" component={RoleSelectPage} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/signup" component={SignupPage} />
           <Route path="/passenger/feedback/review">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><ReviewPage draft={draft} onSubmit={submitFeedback} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><ReviewPage draft={draft} onSubmit={submitFeedback} /></AppShell>
           </Route>
           <Route path="/passenger/feedback/result">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><ResultPage feedbacks={feedbacks} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><ResultPage feedbacks={feedbacks} /></AppShell>
           </Route>
           <Route path="/passenger/feedback">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><FeedbackWizard draft={draft} setDraft={setDraft} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><FeedbackWizard draft={draft} setDraft={setDraft} /></AppShell>
           </Route>
           <Route path="/passenger/history/:id">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><FeedbackDetail feedbacks={feedbacks} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><FeedbackDetail feedbacks={feedbacks} /></AppShell>
           </Route>
           <Route path="/passenger/history">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><PassengerHistory feedbacks={feedbacks} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><PassengerHistory feedbacks={feedbacks} /></AppShell>
           </Route>
           <Route path="/passenger">
-            <AppShell role="passenger" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><PassengerDashboard feedbacks={feedbacks} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><PassengerDashboard feedbacks={feedbacks} /></AppShell>
           </Route>
           <Route path="/agent/cases/:id">
-            <AppShell role="agent" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><AgentCaseDetail feedbacks={feedbacks} setFeedbacks={setFeedbacks} notify={notify} /></AppShell>
+            <ProtectedRoute allowedRole="agent">
+              <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><AgentCaseDetail feedbacks={feedbacks} setFeedbacks={setFeedbacks} notify={notify} /></AppShell>
+            </ProtectedRoute>
           </Route>
           <Route path="/agent">
-            <AppShell role="agent" onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><AgentDashboard feedbacks={feedbacks} /></AppShell>
+            <ProtectedRoute allowedRole="agent">
+              <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><AgentDashboard feedbacks={feedbacks} /></AppShell>
+            </ProtectedRoute>
           </Route>
           <Route path="/help">
-            <AppShell role={role} onRoleChange={switchRole} dark={dark} onDarkChange={setDark}><HelpSettings dark={dark} onDarkChange={setDark} onReset={() => { setFeedbacks(seedCases); setDraft(blankDraft); notify('Demo data restored'); }} /></AppShell>
+            <AppShell user={user} onLogout={logout} dark={dark} onDarkChange={setDark}><HelpSettings dark={dark} onDarkChange={setDark} onReset={() => { setFeedbacks(seedCases); setDraft(blankDraft); notify('Demo data restored'); }} /></AppShell>
           </Route>
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>
       {toast && <div className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-[hsl(var(--sidebar))] px-4 py-3 text-sm font-semibold text-[hsl(var(--sidebar-foreground))] shadow-xl" role="status" data-testid="status-toast"><CheckCircle2 size={16} className="text-[hsl(var(--secondary))]" />{toast}</div>}
     </WouterRouter>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
@@ -300,11 +328,11 @@ function RoleSelect({ onChoose }: { onChoose: (role: Role) => void }) {
   );
 }
 
-function AppShell({ role, onRoleChange, dark, onDarkChange, children }: { role: Role; onRoleChange: (role: Role) => void; dark: boolean; onDarkChange: (value: boolean) => void; children: ReactNode }) {
+function AppShell({ user, onLogout, dark, onDarkChange, children }: { user: { id: string; email: string; name: string; role: Role } | null; onLogout: () => void; dark: boolean; onDarkChange: (value: boolean) => void; children: ReactNode }) {
   const [location] = useLocation();
   const [, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAgent = role === 'agent';
+  const isAgent = user?.role === 'agent';
   const nav = isAgent
     ? [{ href: '/agent', label: 'Inbox', icon: Inbox }, { href: '/help', label: 'Help & demo', icon: CircleHelp }]
     : [{ href: '/passenger', label: 'Overview', icon: LayoutDashboard }, { href: '/passenger/feedback', label: 'Share feedback', icon: Plus }, { href: '/passenger/history', label: 'My history', icon: Archive }, { href: '/help', label: 'Help & demo', icon: CircleHelp }];
@@ -317,25 +345,29 @@ function AppShell({ role, onRoleChange, dark, onDarkChange, children }: { role: 
           {nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setMobileOpen(false)} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${location === href || (href !== '/agent' && href !== '/passenger' && location.startsWith(href)) ? 'bg-[hsl(var(--secondary))] text-[hsl(var(--sidebar))]' : 'text-[hsl(var(--sidebar-foreground)/.72)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))]'}`} data-testid={`link-${label.toLowerCase().replaceAll(' ', '-')}`}><Icon size={18} />{label}</Link>)}
         </nav>
         <div className="mt-auto border-t border-[hsl(var(--sidebar-border))] pt-5">
-          <button onClick={() => { const nextRole = isAgent ? 'passenger' : 'agent'; onRoleChange(nextRole); setLocation(nextRole === 'agent' ? '/agent' : '/passenger'); }} className="flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm text-[hsl(var(--sidebar-foreground)/.72)] transition hover:bg-[hsl(var(--sidebar-accent))]" data-testid="button-switch-role"><span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--secondary)/.45)] text-[hsl(var(--secondary))]">{isAgent ? <UserRound size={17} /> : <Headphones size={17} />}</span><span><span className="block text-xs text-[hsl(var(--sidebar-foreground)/.5)]">Switch to</span><strong>{isAgent ? 'Passenger view' : 'Agent view'}</strong></span></button>
-          <div className="mt-3 flex items-center justify-between px-3 text-xs text-[hsl(var(--sidebar-foreground)/.5)]"><span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[hsl(var(--secondary))]" />Saved locally</span><button onClick={() => onDarkChange(!dark)} className="rounded px-1 py-0.5 hover:text-[hsl(var(--sidebar-foreground))]" aria-label="Toggle colour theme" data-testid="button-toggle-theme">{dark ? 'Light' : 'Dark'}</button></div>
+          {user ? (
+            <button onClick={() => { onLogout(); setLocation('/'); }} className="flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm text-[hsl(var(--sidebar-foreground)/.72)] transition hover:bg-[hsl(var(--sidebar-accent))]" data-testid="button-logout"><span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--secondary)/.45)] text-[hsl(var(--secondary))]"><LogOut size={17} /></span><span><span className="block text-xs text-[hsl(var(--sidebar-foreground)/.5)]">Sign out</span><strong>{user.name}</strong></span></button>
+          ) : (
+            <button onClick={() => setLocation(location.startsWith('/passenger') ? '/login?role=passenger' : '/')} className="flex w-full items-center gap-3 rounded-xl p-3 text-left text-sm text-[hsl(var(--sidebar-foreground)/.72)] transition hover:bg-[hsl(var(--sidebar-accent))]" data-testid="button-login"><span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[hsl(var(--secondary)/.45)] text-[hsl(var(--secondary))]">{location.startsWith('/passenger') ? <UserRound size={17} /> : <Headphones size={17} />}</span><span><span className="block text-xs text-[hsl(var(--sidebar-foreground)/.5)]">{location.startsWith('/passenger') ? 'Passenger access' : 'Service team login'}</span><strong>Sign in</strong></span></button>
+          )}
+          <div className="mt-3 flex items-center justify-between px-3 text-xs text-[hsl(var(--sidebar-foreground)/.5)]"><span className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${user ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--secondary))]'}`} />{user ? 'Authenticated' : 'Public access'}</span><button onClick={() => onDarkChange(!dark)} className="rounded px-1 py-0.5 hover:text-[hsl(var(--sidebar-foreground))]" aria-label="Toggle colour theme" data-testid="button-toggle-theme">{dark ? 'Light' : 'Dark'}</button></div>
         </div>
       </aside>
       {mobileOpen && <button className="fixed inset-0 z-30 bg-[hsl(var(--sidebar)/.5)] md:hidden" onClick={() => setMobileOpen(false)} aria-label="Close menu" data-testid="button-overlay-close" />}
       <div className="md:pl-72">
         <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/.9)] px-5 backdrop-blur md:px-10">
           <button className="rounded-lg p-2 md:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation" data-testid="button-open-navigation"><Menu size={22} /></button>
-          <div className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className="h-2 w-2 rounded-full bg-[hsl(var(--secondary))]" /> Local prototype workspace <span className="text-[hsl(var(--border))]">/</span> {isAgent ? 'Service team' : 'Passenger'}</div>
-          <div className="ml-auto flex items-center gap-3"><button onClick={() => window.alert('You are all caught up in this demo.')} className="relative rounded-xl border border-[hsl(var(--border))] p-2.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]" aria-label="Notifications" data-testid="button-notifications"><Bell size={18} /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent))]" /></button><div className="flex items-center gap-2 border-l border-[hsl(var(--border))] pl-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-xs font-bold text-[hsl(var(--primary-foreground))]">{isAgent ? 'MA' : 'AM'}</span><span className="hidden text-sm font-semibold sm:block">{isAgent ? 'Mekdes A.' : 'Aster M.'}</span></div></div>
+          <div className="hidden items-center gap-2 text-xs text-[hsl(var(--muted-foreground))] md:flex"><span className={`h-2 w-2 rounded-full ${user ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--secondary))]'}`} /> {user ? 'Authenticated workspace' : 'Public workspace'} <span className="text-[hsl(var(--border))]">/</span> {isAgent ? 'Service team' : 'Passenger'}</div>
+          <div className="ml-auto flex items-center gap-3"><button onClick={() => window.alert('You are all caught up in this demo.')} className="relative rounded-xl border border-[hsl(var(--border))] p-2.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]" aria-label="Notifications" data-testid="button-notifications"><Bell size={18} /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent))]" /></button><div className="flex items-center gap-2 border-l border-[hsl(var(--border))] pl-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-xs font-bold text-[hsl(var(--primary-foreground))]">{user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'G'}</span><span className="hidden text-sm font-semibold sm:block">{user?.name || 'Guest'}</span></div></div>
         </header>
-        <main className="mx-auto max-w-[1440px] px-5 py-8 md:px-10 md:py-10">{children}<PageCrumb role={role} /></main>
+        <main className="mx-auto max-w-[1440px] px-5 py-8 md:px-10 md:py-10">{children}<PageCrumb role={user?.role || 'passenger'} authenticated={!!user} /></main>
       </div>
     </div>
   );
 }
 
-function PageCrumb({ role }: { role: Role }) {
-  return <div className="pointer-events-none fixed bottom-4 right-5 z-10 hidden items-center gap-2 rounded-full bg-[hsl(var(--card)/.88)] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] shadow-sm backdrop-blur md:flex"><span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--secondary))]" />{role === 'agent' ? 'SERVICE DESK' : 'PASSENGER DESK'} · DEMO DATA</div>;
+function PageCrumb({ role, authenticated }: { role: Role; authenticated: boolean }) {
+  return <div className="pointer-events-none fixed bottom-4 right-5 z-10 hidden items-center gap-2 rounded-full bg-[hsl(var(--card)/.88)] px-3 py-1.5 text-[10px] text-[hsl(var(--muted-foreground))] shadow-sm backdrop-blur md:flex"><span className={`h-1.5 w-1.5 rounded-full ${authenticated ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--secondary))]'}`} />{role === 'agent' ? 'SERVICE DESK' : 'PASSENGER DESK'} · {authenticated ? 'AUTHENTICATED' : 'PUBLIC'}</div>;
 }
 
 function PageIntro({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: ReactNode }) {
@@ -353,10 +385,27 @@ function Sentiment({ item }: { item: Feedback }) {
 }
 
 function PassengerDashboard({ feedbacks }: { feedbacks: Feedback[] }) {
+  const { user } = useAuth();
   const [location] = useLocation();
   const recent = feedbacks.slice(0, 3);
   return <div className="animate-rise">
-    <PageIntro eyebrow="Good morning, Aster" title="Your voice travels." description="A quick view of what you’ve shared and where it is in the conversation." action={<Link href="/passenger/feedback" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-sm transition hover:-translate-y-0.5" data-testid="link-start-feedback"><Plus size={17} /> Share feedback</Link>} />
+    <PageIntro
+      eyebrow={user ? `Good morning, ${user.name.split(' ')[0]}` : "Welcome, Guest"}
+      title="Your voice travels."
+      description="A quick view of what you’ve shared and where it is in the conversation."
+      action={
+        <div className="flex flex-wrap gap-3">
+          {!user && (
+            <Link href="/login?role=passenger" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-3 text-sm font-bold shadow-sm transition hover:-translate-y-0.5" data-testid="link-login-passenger">
+              <UserRound size={17} /> Sign in
+            </Link>
+          )}
+          <Link href="/passenger/feedback" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-sm transition hover:-translate-y-0.5" data-testid="link-start-feedback">
+            <Plus size={17} /> Share feedback
+          </Link>
+        </div>
+      }
+    />
     <section className="relative overflow-hidden rounded-[1.5rem] bg-[hsl(var(--sidebar))] p-7 text-[hsl(var(--sidebar-foreground))] shadow-[var(--shadow-soft)] md:p-9">
       <div className="pointer-events-none absolute -right-10 -top-24 h-72 w-72 rounded-full border-[35px] border-[hsl(var(--secondary)/.2)]" /><div className="pointer-events-none absolute right-24 top-12 h-3 w-3 rounded-full bg-[hsl(var(--secondary))]" />
       <div className="relative grid gap-8 md:grid-cols-[1.2fr_.8fr] md:items-end"><div><p className="eyebrow text-[hsl(var(--secondary))]">The feedback loop</p><h2 className="mt-3 max-w-xl font-display text-3xl leading-tight md:text-4xl">A few minutes from a shared experience to a better one.</h2><p className="mt-4 max-w-lg text-sm leading-6 text-[hsl(var(--sidebar-foreground)/.68)]">Tell us in the format that feels natural. We’ll keep you updated as your case moves forward.</p></div><div className="grid grid-cols-3 gap-2">{[['01', 'Share'], ['02', 'Understand'], ['03', 'Act']].map(([n, label]) => <div key={n} className="border-l border-[hsl(var(--sidebar-border))] pl-3"><span className="font-mono-ui text-xs text-[hsl(var(--secondary))]">{n}</span><p className="mt-6 text-sm font-semibold">{label}</p></div>)}</div></div>
